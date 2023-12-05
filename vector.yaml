@@ -1,0 +1,48 @@
+api:
+  enabled: false
+
+sources:
+  heroku_logs:
+    type: heroku_logs
+    address: "0.0.0.0:$PORT"
+
+transforms:
+  add_proc_role:
+    type: remap
+    inputs:
+      - heroku_logs
+    source: '.proc_role = split(.proc_id, ".")[0] ?? "unknown"'
+  route_by_app_name:
+    type: route
+    inputs:
+      - add_proc_role
+    route:
+      intercode: '.app_name == "intercode"'
+      larp_library: '.app_name == "larp-library"'
+
+
+sinks:
+  # console:
+  #   type: console
+  #   inputs:
+  #     - route_by_app_name.intercode
+  #   encoding:
+  #     codec: logfmt
+  cloudwatch_intercode:
+    inputs:
+      - route_by_app_name.intercode
+    group_name: intercode2_production
+    type: aws_cloudwatch_logs
+    stream_name: "{{ .proc_role }}"
+    region: us-east-1
+    encoding:
+      codec: json
+  cloudwatch_larp_library:
+    inputs:
+      - route_by_app_name.intercode
+    group_name: larp_library_production
+    type: aws_cloudwatch_logs
+    stream_name: "{{ .proc_role }}"
+    region: us-east-1
+    encoding:
+      codec: json
