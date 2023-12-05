@@ -22,12 +22,13 @@ transforms:
 
 
 sinks:
-  # console:
-  #   type: console
-  #   inputs:
-  #     - route_by_app_name.intercode
-  #   encoding:
-  #     codec: logfmt
+  console:
+    type: console
+    inputs:
+      - route_by_app_name.intercode
+      - route_by_app_name.larp_library
+    encoding:
+      codec: logfmt
   cloudwatch_intercode:
     inputs:
       - route_by_app_name.intercode
