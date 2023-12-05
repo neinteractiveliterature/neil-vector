@@ -39,7 +39,7 @@ sinks:
       codec: json
   cloudwatch_larp_library:
     inputs:
-      - route_by_app_name.intercode
+      - route_by_app_name.larp_library
     group_name: larp_library_production
     type: aws_cloudwatch_logs
     stream_name: "{{ .proc_role }}"
