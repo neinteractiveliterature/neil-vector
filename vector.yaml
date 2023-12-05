@@ -37,6 +37,9 @@ sinks:
     region: us-east-1
     encoding:
       codec: json
+    auth:
+      access_key_id: $AWS_ACCESS_KEY_ID
+      secret_access_key: $AWS_SECRET_ACCESS_KEY
   cloudwatch_larp_library:
     inputs:
       - route_by_app_name.larp_library
@@ -46,3 +49,6 @@ sinks:
     region: us-east-1
     encoding:
       codec: json
+    auth:
+      access_key_id: $AWS_ACCESS_KEY_ID
+      secret_access_key: $AWS_SECRET_ACCESS_KEY
