@@ -22,6 +22,7 @@ transforms:
       - add_proc_role
     route:
       intercode: '.application == "intercode"'
+      intercon_furniture: '.application == "intercon-furniture"'
       larp_library: '.application == "larp-library"'
 
 
@@ -36,6 +37,15 @@ sinks:
     inputs:
       - route_by_app_name.intercode
     group_name: intercode2_production
+    type: aws_cloudwatch_logs
+    stream_name: "{{ .proc_role }}"
+    region: us-east-1
+    encoding:
+      codec: json
+  cloudwatch_intercon_furniture:
+    inputs:
+      - route_by_app_name.intercon_furniture
+    group_name: intercon_furniture_production
     type: aws_cloudwatch_logs
     stream_name: "{{ .proc_role }}"
     region: us-east-1
