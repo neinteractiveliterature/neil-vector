@@ -5,6 +5,7 @@ sources:
   heroku_logs:
     type: heroku_logs
     address: "0.0.0.0:$PORT"
+    query_parameters: ["application"]
 
 transforms:
   add_proc_role:
@@ -17,8 +18,8 @@ transforms:
     inputs:
       - add_proc_role
     route:
-      intercode: '.app_name == "intercode"'
-      larp_library: '.app_name == "larp-library"'
+      intercode: '.application == "intercode"'
+      larp_library: '.application == "larp-library"'
 
 
 sinks:
