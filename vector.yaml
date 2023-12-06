@@ -60,7 +60,7 @@ sinks:
     region: us-east-1
     encoding:
       codec: json
-cloudwatch_listmonk:
+  cloudwatch_listmonk:
     inputs:
       - route_by_app_name.listmonk
     group_name: listmonk_production
