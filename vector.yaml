@@ -6,6 +6,9 @@ sources:
     type: heroku_logs
     address: "0.0.0.0:$PORT"
     query_parameters: ["application"]
+    auth:
+      username: "${HEROKU_SOURCE_USERNAME}"
+      password: "${HEROKU_SOURCE_PASSWORD}"
 
 transforms:
   add_proc_role:
