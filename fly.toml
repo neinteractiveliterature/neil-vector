@@ -17,6 +17,7 @@ min_machines_running = 0
 processes = ["app"]
 
 [env]
+ORG = "new-england-interactive-literature"
 PORT = 8080
 
 [[vm]]
