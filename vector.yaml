@@ -35,9 +35,9 @@ transforms:
     inputs:
       - parse_json
     route:
-      intercode: '.application == "intercode"'
+      intercode: '.application == "intercode" || .application == "Intercode"'
       intercon_furniture: '.application == "intercon-furniture"'
-      larp_library: '.application == "larp-library"'
+      larp_library: '.application == "larp-library" || .application == "LarpLibrary"'
       listmonk: '.application == "neil-listmonk"'
 
 sinks:
