@@ -2,6 +2,8 @@ api:
   enabled: false
 
 sources:
+  # stdin:
+  #   type: stdin
   heroku_logs:
     type: heroku_logs
     address: "0.0.0.0:$PORT"
@@ -16,10 +18,22 @@ transforms:
     inputs:
       - heroku_logs
     source: '.proc_role = split(.proc_id, ".")[0] ?? "unknown"'
+  parse_json:
+    type: remap
+    inputs:
+      - add_proc_role
+    source: |
+      structured = parse_json(.message) ?? null
+      if is_object(structured) {
+        ., err = merge(., structured)
+        if err == null {
+          del(.message)
+        }
+      }
   route_by_app_name:
     type: route
     inputs:
-      - add_proc_role
+      - parse_json
     route:
       intercode: '.application == "intercode"'
       intercon_furniture: '.application == "intercon-furniture"'
@@ -30,7 +44,7 @@ sinks:
   console:
     type: console
     inputs:
-      - heroku_logs
+      - parse_json
     encoding:
       codec: logfmt
   cloudwatch_intercode:
