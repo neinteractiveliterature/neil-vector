@@ -8,11 +8,11 @@ sources:
     type: "nats"
     url: "nats://[fdaa::3]:4223"
     queue: "${QUEUE-}"
-    subject: "${SUBJECT-logs.>}"
+    subject: "logs.>"
     auth:
       strategy: "user_password"
       user_password:
-        user: "${ORG-personal}"
+        user: "new-england-interactive-literature"
         password: "${ACCESS_TOKEN?}"
     connection_name: "Fly logs stream"
   heroku_logs:
@@ -39,16 +39,31 @@ transforms:
       ends_with(string_msg, "}") || !starts_with(string_msg, "{")
     expire_after_ms: 100
     flush_period_ms: 100
-  add_proc_role:
+  map_heroku_proc_id_to_proc_role:
     type: remap
     inputs:
       - reduce_heroku_logs
     source: '.proc_role = split(.proc_id, ".")[0] ?? "unknown"'
-  parse_json:
+  preparse_nats_payload:
     type: remap
     inputs:
       - fly_nats
-      - add_proc_role
+    source: ". = parse_json!(.message)"
+  map_fly_app_name_to_application:
+    type: remap
+    inputs:
+      - preparse_nats_payload
+    source: ".application = .fly.app.name"
+  drop_own_logs:
+    type: filter
+    inputs:
+      - map_fly_app_name_to_application
+    condition: '.application != "neil-vector"'
+  parse_json_message:
+    type: remap
+    inputs:
+      - map_heroku_proc_id_to_proc_role
+      - drop_own_logs
     source: |
       structured = parse_json(.message) ?? null
       if is_object(structured) {
@@ -57,10 +72,18 @@ transforms:
           del(.message)
         }
       }
+  map_fly_process_group_to_proc_role:
+    type: remap
+    inputs:
+      - parse_json_message
+    source: |
+      if .fly_process_group != null {
+        .proc_role = .fly_process_group
+      }
   route_by_app_name:
     type: route
     inputs:
-      - parse_json
+      - map_fly_process_group_to_proc_role
     route:
       intercode: '.application == "intercode" || .application == "Intercode"'
       intercon_furniture: '.application == "intercon-furniture"'
@@ -68,12 +91,12 @@ transforms:
       listmonk: '.application == "neil-listmonk"'
 
 sinks:
-  # console:
-  #   type: console
-  #   inputs:
-  #     - parse_json
-  #   encoding:
-  #     codec: logfmt
+  console:
+    type: console
+    inputs:
+      - parse_json_message
+    encoding:
+      codec: json
   cloudwatch_intercode:
     inputs:
       - route_by_app_name.intercode

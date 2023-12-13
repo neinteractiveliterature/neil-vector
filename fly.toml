@@ -7,20 +7,22 @@ app = "neil-vector"
 primary_region = "iad"
 
 [build]
+image = "timberio/vector:0.34.1-debian"
 
 [http_service]
-auto_start_machines = true
-auto_stop_machines = true
 force_https = true
 internal_port = 8080
-min_machines_running = 0
+min_machines_running = 1
 processes = ["app"]
 
 [env]
-ORG = "new-england-interactive-literature"
 PORT = 8080
 
 [[vm]]
 cpu_kind = "shared"
 cpus = 1
 memory_mb = 256
+
+[[files]]
+guest_path = "/etc/vector/vector.yaml"
+local_path = "vector.yaml"
