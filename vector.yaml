@@ -4,6 +4,8 @@ api:
 sources:
   # stdin:
   #   type: stdin
+  internal:
+    type: internal_logs
   fly_nats:
     type: "nats"
     url: "nats://[fdaa::3]:4223"
@@ -15,35 +17,8 @@ sources:
         user: "new-england-interactive-literature"
         password: "${ACCESS_TOKEN?}"
     connection_name: "Fly logs stream"
-  heroku_logs:
-    type: heroku_logs
-    address: "0.0.0.0:$PORT"
-    query_parameters: ["application"]
-    auth:
-      username: "${HEROKU_SOURCE_USERNAME}"
-      password: "${HEROKU_SOURCE_PASSWORD}"
 
 transforms:
-  reduce_heroku_logs:
-    type: reduce
-    inputs:
-      - heroku_logs
-    group_by:
-      - app_name
-      - application
-      - proc_id
-    merge_strategies:
-      message: concat_raw
-    ends_when: |
-      string_msg = string!(.message)
-      ends_with(string_msg, "}") || !starts_with(string_msg, "{")
-    expire_after_ms: 100
-    flush_period_ms: 100
-  map_heroku_proc_id_to_proc_role:
-    type: remap
-    inputs:
-      - reduce_heroku_logs
-    source: '.proc_role = split(.proc_id, ".")[0] ?? "unknown"'
   preparse_nats_payload:
     type: remap
     inputs:
@@ -62,7 +37,6 @@ transforms:
   parse_json_message:
     type: remap
     inputs:
-      - map_heroku_proc_id_to_proc_role
       - drop_own_logs
     source: |
       structured = parse_json(.message) ?? null
@@ -91,12 +65,12 @@ transforms:
       listmonk: '.application == "neil-listmonk"'
 
 sinks:
-  #console:
-  #  type: console
-  #  inputs:
-  #    - parse_json_message
-  #  encoding:
-  #    codec: json
+  console:
+   type: console
+   inputs:
+     - internal
+   encoding:
+     codec: text
   cloudwatch_intercode:
     inputs:
       - route_by_app_name.intercode
