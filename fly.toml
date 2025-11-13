@@ -7,7 +7,7 @@ app = "neil-vector"
 primary_region = "iad"
 
 [build]
-image = "timberio/vector:0.34.1-debian"
+image = "timberio/vector:latest-debian"
 
 [http_service]
 force_https = true
