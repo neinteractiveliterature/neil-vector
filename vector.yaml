@@ -91,12 +91,12 @@ transforms:
       listmonk: '.application == "neil-listmonk"'
 
 sinks:
-  console:
-    type: console
-    inputs:
-      - parse_json_message
-    encoding:
-      codec: json
+  #console:
+  #  type: console
+  #  inputs:
+  #    - parse_json_message
+  #  encoding:
+  #    codec: json
   cloudwatch_intercode:
     inputs:
       - route_by_app_name.intercode
