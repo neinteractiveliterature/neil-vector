@@ -51,8 +51,10 @@ transforms:
     inputs:
       - parse_json_message
     source: |
-      if .fly_process_group != null {
-        .proc_role = .fly_process_group
+      if .fly.fly_process_group != null {
+        .proc_role = .fly.fly_process_group
+      } else {
+        .proc_role = "unknown"
       }
   route_by_app_name:
     type: route
@@ -63,14 +65,21 @@ transforms:
       intercon_furniture: '.application == "intercon-furniture"'
       larp_library: '.application == "larp-library" || .application == "LarpLibrary"'
       listmonk: '.application == "neil-listmonk"'
+      rotator: '.application == "rotator"'
 
 sinks:
   console:
-   type: console
-   inputs:
-     - internal
-   encoding:
-     codec: text
+    type: console
+    inputs:
+      - internal
+    encoding:
+      codec: text
+  # debug:
+  #   type: console
+  #   inputs:
+  #     - route_by_app_name.intercode
+  #   encoding:
+  #     codec: json
   cloudwatch_intercode:
     inputs:
       - route_by_app_name.intercode
@@ -104,6 +113,24 @@ sinks:
     group_name: listmonk_production
     type: aws_cloudwatch_logs
     stream_name: "{{ .proc_role }}"
+    region: us-east-1
+    encoding:
+      codec: json
+  cloudwatch_rotator:
+    inputs:
+      - route_by_app_name.rotator
+    group_name: rotator_production
+    type: aws_cloudwatch_logs
+    stream_name: "{{ .proc_role }}"
+    region: us-east-1
+    encoding:
+      codec: json
+  cloudwatch_unmatched:
+    inputs:
+      - route_by_app_name._unmatched
+    group_name: other_production
+    type: aws_cloudwatch_logs
+    stream_name: "{{ .application }}_{{ .proc_role }}"
     region: us-east-1
     encoding:
       codec: json
