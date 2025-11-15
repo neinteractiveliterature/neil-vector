@@ -16,7 +16,8 @@ min_machines_running = 1
 processes = ["app"]
 
 [env]
-PORT = 8080
+PORT = "8080"
+ORG = "new-england-interactive-literature"
 
 [[vm]]
 cpu_kind = "shared"
